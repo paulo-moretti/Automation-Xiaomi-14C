@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 cmd_process = None
 
-PROGRESS_FILE = 'automation_progress_redmi.json' # Nome do arquivo de progresso específico para este celular
+PROGRESS_FILE = 'automation_progress.json'
 
 def load_progress():
     if os.path.exists(PROGRESS_FILE):
@@ -31,7 +31,7 @@ def execute_main_code():
 def close_cmd():
     global cmd_process
     if cmd_process is not None:
-        os.kill(cmd_process.pid, signal.SIGTERM) 
+        os.kill(cmd_process.pid, signal.SIGTERM)
         cmd_process = None
 
 
@@ -49,8 +49,6 @@ options.set_capability("appActivity", "br.gov.sp.sousp.feature.splash.SplashActi
 options.set_capability("automationName", "UiAutomator2")
 options.set_capability("noReset", True)
 options.set_capability("newCommandTimeout", 300)
-# O chromedriverExecutable pode precisar ser atualizado dependendo da configuração do Appium e da versão do Android
-# options.set_capability("chromedriverExecutable", "C:/Users/user39/Downloads/chromedriver_win32/chromedriver.exe")
 
 driver = None
 
@@ -58,25 +56,25 @@ def rolar_para_baixo(driver, duracao=1000):
     tamanho_tela = driver.get_window_size()
     largura = tamanho_tela["width"]
     altura = tamanho_tela["height"]
-    x = largura // 2
-    y_inicio = int(altura * 0.8)
-    y_fim = int(altura * 0.2)
+    x = largura // 3
+    y_inicio = int(altura * 1.0)
+    y_fim = int(altura * 0.5)
     driver.swipe(x, y_inicio, x, y_fim, duracao)
 
-def rolar_para_cima_meses(driver, start_y_ratio=0.45, end_y_ratio=0.55, duration=500):
+def rolar_para_cima_meses(driver, start_y_ratio=0.80, end_y_ratio=0.90, duration=1000):
     tamanho_tela = driver.get_window_size()
     largura = tamanho_tela["width"]
     altura = tamanho_tela["height"]
-    x = largura // 2
+    x = largura // 3
     start_y = int(altura * start_y_ratio)
     end_y = int(altura * end_y_ratio)
     driver.swipe(x, start_y, x, end_y, duration)
 
-def rolar_para_cima_anos(driver, start_y_ratio=0.5, end_y_ratio=0.55, duration=500):
+def rolar_para_cima_anos(driver, start_y_ratio=0.8, end_y_ratio=0.90, duration=1000):
     tamanho_tela = driver.get_window_size()
     largura = tamanho_tela["width"]
     altura = tamanho_tela["height"]
-    x = largura // 2
+    x = largura // 3
     start_y = int(altura * start_y_ratio)
     end_y = int(altura * end_y_ratio)
     driver.swipe(x, start_y, x, end_y, duration)
@@ -101,7 +99,7 @@ def capturar_elementos_incrementalmente(driver, resource_id, elementos_processad
 
         # Rolar para baixo para encontrar mais elementos
         rolar_para_baixo(driver)
-        time.sleep(1)
+        time.sleep(2)
 
         # Atualizar os elementos visíveis e identificar novos
         elementos_visiveis = driver.find_elements(AppiumBy.ID, resource_id)
@@ -117,56 +115,32 @@ try:
     print_green("Abrindo o aplicativo e navegando até a tela de login...")
 
     try:
-        WebDriverWait(driver, 60).until(EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/login")))
-        driver.find_element(AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/login").click()
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/login"))).click()
         print_green("Botão \'Entrar com o gov.br\' clicado com sucesso!")
-
-        # --- INÍCIO DO CÓDIGO DE DEBUG DE CONTEXTO ---
-        print("Contextos disponíveis:", driver.contexts)
-        
-        # Tenta alternar para o contexto WEBVIEW, se houver
-        webview_context = None
-        for context in driver.contexts:
-            if "WEBVIEW" in context:
-                webview_context = context
-                break
-
-        if webview_context:
-            driver.switch_to.context(webview_context)
-            print(f"Contexto alterado para: {webview_context}")
-            time.sleep(5) # Espera para a página carregar no novo contexto
-            print("Page Source após alternar para WEBVIEW:")
-            print(driver.page_source)
-            # Voltar para o contexto nativo para o restante do script, se necessário
-            driver.switch_to.context("NATIVE_APP")
-            print("Contexto voltou para NATIVE_APP")
-        else:
-            print("Nenhum contexto WEBVIEW encontrado.")
-        # --- FIM DO CÓDIGO DE DEBUG DE CONTEXTO ---
 
         login_sucesso = False
         while not login_sucesso:
             usuario = input("Digite o seu CPF: ")
-            # Campo CPF - Usando XPATH fornecido pelo usuário
-            element = WebDriverWait(driver, 10).until(
+            # Campo CPF - Usando XPATH fornecido pelo usuário (mantido do Redmi 14C)
+            element = WebDriverWait(driver, 60).until(
                 EC.presence_of_element_located((AppiumBy.XPATH, "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.webkit.WebView/android.view.View/android.view.View[2]/android.view.View/android.view.View/android.view.View[2]/android.widget.EditText"))
             )
             element.send_keys(usuario)
-            # Botão Continuar - Usando XPATH fornecido pelo usuário
+            # Botão Continuar - Usando XPATH fornecido pelo usuário (mantido do Redmi 14C)
             driver.find_element(AppiumBy.XPATH, "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.webkit.WebView/android.view.View/android.view.View[2]/android.view.View/android.view.View/android.view.View[2]/android.view.View[3]/android.widget.Button").click()
 
             senha = input("Digite a sua senha: ")
-            # Campo Senha - Usando XPATH fornecido pelo usuário
-            element = WebDriverWait(driver, 10).until(
+            # Campo Senha - Usando XPATH fornecido pelo usuário (mantido do Redmi 14C)
+            element = WebDriverWait(driver, 60).until(
                 EC.presence_of_element_located((AppiumBy.XPATH, "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.webkit.WebView/android.view.View[3]/android.view.View/android.view.View[1]/android.widget.EditText"))
             )
             element.send_keys(senha)
-            # Botão Entrar - Usando XPATH fornecido pelo usuário
+            # Botão Entrar - Usando XPATH fornecido pelo usuário (mantido do Redmi 14C)
             driver.find_element(AppiumBy.XPATH, "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.webkit.WebView/android.view.View[3]/android.view.View/android.view.View[1]/android.widget.Button[3]").click()
 
             try:
-                # Verificando se voltou para a tela de CPF (login falhou)
-                WebDriverWait(driver, 10).until(
+                # Verificando se voltou para a tela de CPF (login falhou) (mantido do Redmi 14C)
+                WebDriverWait(driver, 60).until(
                     EC.presence_of_element_located((AppiumBy.XPATH, "/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.view.ViewGroup/android.widget.FrameLayout[1]/android.widget.FrameLayout[2]/android.webkit.WebView/android.view.View/android.view.View[2]/android.view.View/android.view.View/android.view.View[2]/android.widget.EditText"))
                 )
                 print("Login falhou. Por favor, verifique o CPF e a senha e tente novamente.")
@@ -175,33 +149,33 @@ try:
                 print_green("Login realizado com sucesso!")
 
         try:
-            # Botão Pular Tutorial - Usando ID fornecido pelo usuário
-            botao_skip = WebDriverWait(driver, 10).until(
+            # Botão Pular Tutorial - Usando ID fornecido pelo usuário (mantido do Redmi 14C)
+            botao_skip = WebDriverWait(driver, 60).until(
                 EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/bt_skip"))
             )
             botao_skip.click()
-            print("Botão \'bt_skip\' encontrado e clicado com sucesso.")
+            print("Botão \'bt_skip\' encontrado e clicado com sucesso!")
         except TimeoutException:
             print("Botão \'bt_skip\' não encontrado. Continuando execução...")
 
     except TimeoutException:
         print("Elemento de login não encontrado. Verificando se o usuário já está logado...")
         try:
-            # Elemento após login - Usando ID fornecido pelo usuário
-            WebDriverWait(driver, 10).until(
+            # Elemento após login - Usando ID fornecido pelo usuário (mantido do Redmi 14C)
+            WebDriverWait(driver, 60).until(
                 EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/iv_right"))
             )
             print_green("Usuário já está logado. Continuando execução...")
         except TimeoutException:
             print("Elemento de login e o indicador de usuário logado não foram encontrados. Verifique o estado do aplicativo.")
 
-    # Elemento clicado após login - Usando ID fornecido pelo usuário
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/iv_right"))).click()
+    # Elemento clicado após login - Usando ID fornecido pelo usuário (mantido do Redmi 14C)
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/iv_right"))).click()
     print_green("Navegando até \'Demonstrativos de Pagamentos\'...")
 
     try:
-        # Elementos de seleção de vínculo - Usando ID fornecido pelo usuário (tv_cargo)
-        WebDriverWait(driver, 10).until(
+        # Elementos de seleção de vínculo - Usando ID fornecido pelo usuário (tv_cargo) (mantido do Redmi 14C)
+        WebDriverWait(driver, 60).until(
             EC.presence_of_all_elements_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/tv_cargo"))
         )
         elementos = driver.find_elements(AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/tv_cargo")
@@ -230,12 +204,12 @@ try:
     )
     driver.find_elements(AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/card")[0].click()
 
-    # Aba ANTERIORES - Usando XPATH 
+    # Aba ANTERIORES - Usando XPATH (mantido do Redmi 14C)
     WebDriverWait(driver, 60).until(
         EC.presence_of_element_located((AppiumBy.XPATH, "//android.widget.LinearLayout[@content-desc=\'ANTERIORES\']"))
     ).click()
 
-    # Elementos dos anos - Usando ID 
+    # Elementos dos anos - Usando ID (mantido do Redmi 14C)
     WebDriverWait(driver, 60).until(
         EC.presence_of_all_elements_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/tv_info"))
     )
@@ -248,7 +222,7 @@ try:
     anos_textos.sort()
     print("Anos coletados:", anos_textos)
 
-    # Carregar progresso
+    # Carregar progresso (ADICIONADO DO S10+)
     progress = load_progress()
     start_year = progress['last_year']
     start_month = progress['last_month']
@@ -261,7 +235,7 @@ try:
         print_green(f"Coletando ano {ano}")
 
         ano_encontrado = False
-        # Usando ID para encontrar elementos de ano
+        # Usando ID para encontrar elementos de ano (mantido do Redmi 14C)
         elementos_visiveis = driver.find_elements(AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/tv_info")
         for el in elementos_visiveis:
             if el.text.strip() == str(ano):
@@ -283,8 +257,8 @@ try:
         primeira_rolagem = True
 
         try:
-            # Elementos dos meses - Usando ID 
-            WebDriverWait(driver, 60).until(
+            # Elementos dos meses - Usando ID (mantido do Redmi 14C)
+            WebDriverWait(driver, 70).until(
                 EC.presence_of_all_elements_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/tv_data"))
             )
             print("Capturando todos os meses disponíveis de forma incremental...")
@@ -296,32 +270,29 @@ try:
                 rolar_para_baixo(driver)
                 primeira_rolagem = False
 
-            # Ajustar a iteração para começar do mês salvo
+            # Ajustar a iteração para começar do mês salvo (ADICIONADO DO S10+)
             start_index = 0
             if start_year == ano and start_month:
                 try:
-                    # Encontrar o índice do mês salvo na lista de meses disponíveis
-                    # A lista meses_disponiveis está em ordem de mais recente para mais antigo
-                    # Precisamos encontrar o índice do mês salvo e começar do próximo (ou do início se não encontrado)
-                    # Invertemos a lista para facilitar a busca e depois voltamos ao normal para o loop
-                    meses_disponiveis_reversed = meses_disponiveis[::-1]
-                    if start_month in meses_disponiveis_reversed:
-                        start_index = meses_disponiveis_reversed.index(start_month) + 1
-                        print(f"Reiniciando do mês {start_month} (índice {start_index}).")
-                    else:
-                        print(f"Mês {start_month} não encontrado na lista de meses disponíveis para o ano {ano}. Começando do início.")
+                    start_index = meses_disponiveis.index(start_month) + 1
+                    print(f"Reiniciando do mês {start_month} (índice {start_index}).")
                 except ValueError:
                     print(f"Mês {start_month} não encontrado na lista de meses disponíveis para o ano {ano}. Começando do início.")
 
-            for i in range(len(meses_disponiveis) - 1 - start_index, -1, -1):
+            for i in range(len(meses_disponiveis) - 1, start_index - 1, -1):
                 mes = meses_disponiveis[i]
-                
+
+                # Se o mês já foi processado no ano atual, pular (ADICIONADO DO S10+)
+                if start_year == ano and start_month and i < meses_disponiveis.index(start_month):
+                    print(f"Pulando mês {mes} do ano {ano} (já processado anteriormente).")
+                    continue
+
                 elementos_visiveis = driver.find_elements(AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/tv_data")
                 mes_encontrado = False
                 for el in elementos_visiveis:
                     if el.text.strip() == mes:
                         try:
-                            WebDriverWait(driver, 60).until(EC.element_to_be_clickable(el))
+                            WebDriverWait(driver, 70).until(EC.element_to_be_clickable(el))
                             el.click()
                             print(f"Coletando mês {mes} do ano {ano}.")
                             mes_encontrado = True
@@ -332,38 +303,38 @@ try:
 
                 if mes_encontrado:
                     try:
-                        # Botão Salvar (inicial) - Usando ID 
-                        WebDriverWait(driver, 60).until(
+                        # Botão Salvar (inicial) - Usando ID (mantido do Redmi 14C)
+                        WebDriverWait(driver, 70).until(
                             EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/bt_save"))
                         ).click()
-                        print("Botão \'Salvar\' clicado com sucesso.")
+                        print("Botão \'Salvar\' clicado com sucesso!")
                     except TimeoutException:
                         print("Erro: Botão \'Salvar\' não foi encontrado. Pulando para o próximo mês.")
                         continue
 
-                    # Adicionado: Interação com o botão \'Salvar\' na tela do Google Drive
+                    # Adicionado: Interação com o botão \'Salvar\' na tela do Google Drive (ADICIONADO DO S10+)
                     try:
-                        WebDriverWait(driver, 60).until(
-                            EC.presence_of_element_located((AppiumBy.ID, "com.google.android.apps.docs:id/save_button"))
+                        WebDriverWait(driver, 70).until(
+                            EC.presence_of_element_located((AppiumBy.XPATH, '//android.widget.Button[contains(@text, "Salvar")]'))
                         ).click()
-                        print("Botão \'Salvar\' do Google Drive clicado com sucesso.")
+                        print("Botão \'Salvar\' do Google Drive clicado com sucesso!")
                     except TimeoutException:
                         print("Erro: Botão \'Salvar\' do Google Drive não foi encontrado.")
                         # Dependendo do fluxo, pode ser necessário adicionar um \'continue\' ou outro tratamento de erro aqui
                         pass # Mantendo a execução para os próximos meses, mas o salvamento falhou para este mês
 
-                    # Salvar progresso após processar o mês com sucesso
+                    # Salvar progresso após processar o mês com sucesso (ADICIONADO DO S10+)
                     save_progress(ano, mes)
                     print(f"Progresso salvo: Ano {ano}, Mês {mes}")
 
                     try:
-                        # Botão Voltar - Usando XPATH 
-                        WebDriverWait(driver, 60).until(
+                        # Botão Voltar - Usando XPATH (mantido do Redmi 14C)
+                        WebDriverWait(driver, 70).until(
                             EC.presence_of_element_located((AppiumBy.XPATH, "//android.widget.ImageButton[@content-desc=\'Navegar para cima\']"))
                         ).click()
-                        print("Botão \'Voltar\' clicado com sucesso.")
+                        print("Botão \'Voltar\' clicado com sucesso!")
                         rolar_para_cima_meses(driver)
-                        
+
                     except TimeoutException:
                         print("Erro: Botão de navegação \'Voltar\' não foi encontrado. Tentando prosseguir.")
                         continue
@@ -371,13 +342,13 @@ try:
                     meses_processados.append(mes)
                     time.sleep(1)
 
-            # Limpar progresso do mês após todos os meses do ano serem processados
+            # Limpar progresso do mês após todos os meses do ano serem processados (ADICIONADO DO S10+)
             save_progress(ano, None)
             print(f"Todos os meses do ano {ano} processados. Limpando progresso do mês.")
 
             try:
-                # Elemento para voltar para a lista de anos
-                WebDriverWait(driver, 60).until(
+                # Elemento para voltar para a lista de anos (mantido do Redmi 14C)
+                WebDriverWait(driver, 70).until(
                     EC.presence_of_element_located((AppiumBy.ID, "br.gov.sp.prodesp.sousp:id/tv_ano"))
                 ).click()
                 rolar_para_cima_anos(driver)
@@ -395,7 +366,6 @@ finally:
 
 if __name__ == "__main__":
     print("Executando o código principal...")
-    # Não é mais necessário o time.sleep(60) aqui, pois o Appium já espera pela conexão
-    print("Código principal finalizado.")
-
+    time.sleep(40)
+    print("Automação finalizada.")
 

@@ -36,3 +36,4 @@ if __name__ == "__main__":
     finally:
         print("Finalizando o Appium...")
         close_process_by_name("cmd.exe") 
+        
